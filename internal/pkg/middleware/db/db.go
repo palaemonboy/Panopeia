@@ -14,7 +14,6 @@ type DBConfig struct {
 	Name        string `yaml:"name"`
 	User        string `yaml:"user"`
 	Password    string `yaml:"password"`
-	Domain      string `yaml:"domain"`
 	IP          string `yaml:"ip"`
 	Port        string `yaml:"port"`
 	DBName      string `yaml:"dbName"`

@@ -22,7 +22,6 @@ func TestUnit_Initializes(t *testing.T) {
 			Name:        "xxx",
 			User:        "xxx",
 			Password:    "xxx",
-			Domain:      "xxx",
 			IP:          "127.0.0.1",
 			Port:        "3306",
 			DBName:      "xxx",
