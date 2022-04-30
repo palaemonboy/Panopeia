@@ -1,0 +1,13 @@
+DB:
+  -
+    name: test
+    user: writeuser
+    password: xxx
+    domain: xxxx
+    ip: 127.0.0.1
+    port: 3306
+    dbName: xxx
+    charset: utf8mb4
+    maxIdle: 10
+    maxOpen: 20
+    maxLiftTime: 3600000
