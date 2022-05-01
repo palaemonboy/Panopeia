@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/palaemonboy/Panopeia/internal/pkg/errs"
 	"github.com/palaemonboy/Panopeia/internal/pkg/middleware"
-	"github.com/pkg/errors"
 )
 
 // GetUsers 获取所有用户
@@ -15,8 +13,7 @@ func GetUsers(c *gin.Context) {
 
 	if err := c.ShouldBindQuery(&req); err != nil {
 		middleware.SetErrWithTraceBack(c,
-			http.StatusNotFound,
-			errors.Wrapf(err, "invalid req"),
+			errs.New(errs.ParamError, "invalid req"),
 		)
 		return
 	}
