@@ -12,6 +12,7 @@ const (
 	contextKeyErr  = "err"
 )
 
+// Response 所有Resp按照固定格式返回
 type Response struct {
 	Status  int         `json:"status"`
 	Version string      `json:"version"`

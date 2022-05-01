@@ -13,14 +13,16 @@ func GetUsers(c *gin.Context) {
 	var req GetUsersReq
 
 	if err := c.ShouldBindQuery(&req); err != nil {
-		middlewares.SetErr(c,
+		middlewares.SetErrWithTraceBack(c,
 			http.StatusNotFound,
 			errors.Wrapf(err, "invalid req"),
 		)
 		return
 	}
 	Mesaage := "Get All users haha."
+	var resp GetUserResp
+	resp.UserName = req.UserName
+	resp.Message = Mesaage
 
-	middlewares.SetResp(c, Mesaage)
-
+	middlewares.SetResp(c, resp)
 }
