@@ -5,11 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/palaemonboy/Panopeia/internal/pkg/errs"
 )
 
 const (
 	contextKeyResp = "resp"
-	contextKeyErr  = "err"
+	contextKeyErr  = "errs"
 )
 
 // Response 所有Resp按照固定格式返回
@@ -22,7 +23,7 @@ type Response struct {
 }
 
 type Error struct {
-	StatusCode *int   `json:"-"`
+	StatusCode int    `json:"-"`
 	Message    string `json:"message"`
 	TraceBack  string `json:"traceback"`
 }
@@ -49,9 +50,9 @@ func Jsonifier(version string) gin.HandlerFunc {
 		}
 
 		if value, exists := c.Get(contextKeyErr); exists {
-			if err, ok := value.(*Error); ok {
-				if err.StatusCode != nil {
-					statusCode = *err.StatusCode
+			if err, ok := value.(*errs.Error); ok {
+				if err.Code != 0 {
+					statusCode = err.Code
 				}
 			}
 
@@ -71,18 +72,20 @@ func SetResp(c *gin.Context, value interface{}) {
 	c.Set(contextKeyResp, value)
 }
 
-func SetErr(c *gin.Context, statusCode int, err error) {
+func SetErr(c *gin.Context, err error) {
+	statusCode, message := errs.RetErr(err)
 	c.Set(contextKeyErr, &Error{
-		StatusCode: &statusCode,
-		Message:    err.Error(),
+		StatusCode: statusCode,
+		Message:    message,
 		TraceBack:  "",
 	})
 }
 
-func SetErrWithTraceBack(c *gin.Context, statusCode int, err error) {
+func SetErrWithTraceBack(c *gin.Context, err error) {
+	statusCode, message := errs.RetErr(err)
 	c.Set(contextKeyErr, &Error{
-		StatusCode: &statusCode,
-		Message:    err.Error(),
+		StatusCode: statusCode,
+		Message:    message,
 		TraceBack:  fmt.Sprintf("%+v", err),
 	})
 }

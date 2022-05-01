@@ -17,7 +17,7 @@ func TestUnit_Initialize(t *testing.T) {
 	convey.Convey("TestUnit_Initialize", t, func() {
 		convey.Convey("Err-01", func() {
 			patches1 := gomonkey.ApplyFunc(ioutil.ReadFile, func(fileName string) ([]byte, error) {
-				return nil, errors.New("err")
+				return nil, errors.New("errs")
 			})
 			defer patches1.Reset()
 			config, err := Initialize()

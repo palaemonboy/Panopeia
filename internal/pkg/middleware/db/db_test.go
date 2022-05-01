@@ -35,7 +35,7 @@ func TestUnit_Initializes(t *testing.T) {
 		convey.Convey("Err-01", func() {
 			patches1 := gomonkey.ApplyFunc(gorm.Open, func(dialector gorm.Dialector, opts ...gorm.Option) (
 				db *gorm.DB, err error) {
-				return nil, errors.New("err")
+				return nil, errors.New("errs")
 			})
 			defer patches1.Reset()
 			err := Initializes(dbConfigs)
@@ -48,7 +48,7 @@ func TestUnit_Initializes(t *testing.T) {
 			})
 			defer patches1.Reset()
 			patches2 := gomonkey.ApplyFunc(gormConn.DB, func() (*sql.DB, error) {
-				return nil, errors.New("err")
+				return nil, errors.New("errs")
 			})
 			defer patches2.Reset()
 			err := Initializes(dbConfigs)
