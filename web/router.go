@@ -2,33 +2,51 @@ package web
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/palaemonboy/Panopeia/pkg/middlewares"
-	"github.com/palaemonboy/Panopeia/web/handlers"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/palaemonboy/Panopeia/internal/pkg/middleware/db"
+
+	"github.com/palaemonboy/Panopeia/internal/pkg/config"
+
+	"github.com/gin-gonic/gin"
+	"github.com/palaemonboy/Panopeia/internal/pkg/middleware"
+	"github.com/palaemonboy/Panopeia/web/handlers"
 )
 
+// Router 路由结构体
 type Router struct {
 	*gin.Engine
 }
 
-//  代码入口
-
+// NewRouter 代码入口
 func NewRouter() *Router {
+	//  配置初始化
+	conf, err := config.Initialize()
+	if err != nil {
+		// 前置配置加载失败，直接panic
+		panic(err)
+	}
+	// DB初始化
+	if err := db.Initializes(conf.DB); err != nil {
+		// 前置DB初始化失败，直接panic
+		panic(err)
+	}
+	// 获取DB连接，测试数据库使用
+	_, err = db.GetTestDB()
 	router := gin.Default()
 	version := "0.0.1"
 	router.Use(
-		middlewares.Jsonifier(version),
+		middleware.Jsonifier(version),
 	)
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome Panopeia Server.")
 	})
 	router.GET("/start", func(c *gin.Context) {
-		middlewares.SetResp(c, "Panopeia Running.")
+		middleware.SetResp(c, "Panopeia Running.")
 	})
 	// API入口
 	API := router.Group("/apis")
@@ -44,10 +62,11 @@ func NewRouter() *Router {
 	}
 
 	return &Router{
-		router,
+		Engine: router,
 	}
 }
 
+// Run 监听连接
 func (r *Router) Run() {
 
 	srv := &http.Server{
@@ -77,6 +96,8 @@ func (r *Router) Run() {
 	log.Println("Server exiting")
 
 }
+
+// Run api入口
 func Run() {
 	NewRouter().Run()
 }
