@@ -41,6 +41,7 @@ func NewRouter() *Router {
 	version := "0.0.1"
 	router.Use(
 		middleware.Jsonifier(version),
+		middleware.CORS(),
 	)
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome Panopeia Server.")
