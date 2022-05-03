@@ -1,7 +1,7 @@
 package db
 
 import (
-	"strconv"
+	"github.com/palaemonboy/Panopeia/internal/pkg/config"
 	"time"
 
 	"github.com/pkg/errors"
@@ -9,33 +9,19 @@ import (
 	"gorm.io/gorm"
 )
 
-// DBConfig DB配置结构体
-type DBConfig struct {
-	Name        string `yaml:"name"`
-	User        string `yaml:"user"`
-	Password    string `yaml:"password"`
-	IP          string `yaml:"ip"`
-	Port        string `yaml:"port"`
-	DBName      string `yaml:"dbName"`
-	Charset     string `yaml:"charset"`
-	MaxIdle     string `yaml:"maxIdle"`
-	MaxOpen     string `yaml:"maxOpen"`
-	MaxLiftTime string `yaml:"maxLiftTime"`
-}
-
 const (
 	// TestDB 测试DB
 	TestDB = "test"
 )
 
-type GromManager struct {
+type GormManager struct {
 	ConnPool map[string]*gorm.DB
 }
 
-var dbManager GromManager
+var dbManager GormManager
 
 // Initializes DB初始化
-func Initializes(dbConfigs []DBConfig) error {
+func Initializes(dbConfigs *config.DBConfig) error {
 	dbManager.ConnPool = make(map[string]*gorm.DB)
 	for _, dbConfig := range dbConfigs {
 		conn, err := openGorm(dbConfig)
@@ -48,7 +34,7 @@ func Initializes(dbConfigs []DBConfig) error {
 }
 
 // openGorm 根据DB配置初始化连接
-func openGorm(config DBConfig) (*gorm.DB, error) {
+func openGorm(config config.DBConfig) (*gorm.DB, error) {
 	dsn := config.User + ":" + config.Password + "@tcp(" + config.IP + ":" + config.Port + ")/" + config.DBName +
 		"?parseTime=True&loc=Local&charset=" + config.Charset
 	if config.Charset == "" {
@@ -62,12 +48,9 @@ func openGorm(config DBConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "gorm get sqlDB failed")
 	}
-	maxIdle, _ := strconv.Atoi(config.MaxIdle)
-	maxOpen, _ := strconv.Atoi(config.MaxOpen)
-	lifeTime, _ := strconv.Atoi(config.MaxLiftTime)
-	sqlDB.SetMaxIdleConns(maxIdle)
-	sqlDB.SetMaxOpenConns(maxOpen)
-	sqlDB.SetConnMaxIdleTime(time.Duration(lifeTime) * time.Millisecond)
+	sqlDB.SetMaxIdleConns(config.MaxIdle)
+	sqlDB.SetMaxOpenConns(config.MaxOpen)
+	sqlDB.SetConnMaxIdleTime(time.Duration(config.MaxLiftTime) * time.Millisecond)
 	return gormConn, nil
 }
 
