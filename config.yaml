@@ -13,14 +13,15 @@ log:
   max_backups: 7
 #DB 配置
 DB:
-  name: test
-  user: root
-  password: www.nas.beer
-  ip: 43.134.14.101
-  port: 8100
-  dbName: test
-  charset: utf8mb4
-  maxIdle: 10
-  maxOpen: 20
-  maxLiftTime: 3600000
+  -
+    name: test
+    user: root
+    password: www.nas.beer
+    ip: 43.134.14.101
+    port: 8100
+    dbName: test
+    charset: utf8mb4
+    maxIdle: 10
+    maxOpen: 20
+    maxLiftTime: 3600000
 
