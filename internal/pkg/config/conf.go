@@ -2,14 +2,12 @@ package config
 
 import (
 	"fmt"
+
+	"github.com/pkg/errors"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
-
-type Config struct {
-}
-
-var Conf = new(AppConfig)
 
 type AppConfig struct {
 	Name      string `mapstructure:"name"`
@@ -17,7 +15,7 @@ type AppConfig struct {
 	StartTime string `mapstructure:"start_time"`
 	MachineId int64  `mapstructure:"machine_id"`
 	Log       *LogConfig
-	DB        *DBConfig
+	DB        []DBConfig
 }
 
 type LogConfig struct {
@@ -42,29 +40,26 @@ type DBConfig struct {
 	MaxLiftTime int    `mapstructure:"maxLiftTime"`
 }
 
-func Init() (err error) {
+func Init() (AppConfig, error) {
+	var config AppConfig
 	viper.SetConfigFile("config.yaml")
 	viper.AddConfigPath(".")
-	err = viper.ReadInConfig()
+	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("init settings failed, err:%v\n", err)
-		return
+		return config, errors.Wrapf(err, "init settings failed")
 	}
-	// 将读取的配置信息保存至全局变量 Conf
-	if err := viper.Unmarshal(Conf); err != nil {
-		fmt.Printf("Unmarshal settings failed, err:%v\n", err)
-		return err
+	// 将读取的配置信息保存至config中
+	if err := viper.Unmarshal(&config); err != nil {
+		return config, errors.Wrapf(err, "Unmarshal settings failed")
 	}
-
 	// 监控配置文件变化
 	viper.WatchConfig()
-
 	viper.OnConfigChange(func(in fsnotify.Event) {
 		fmt.Printf("配置文件更改成功")
-		if err := viper.Unmarshal(Conf); err != nil {
+		if err := viper.Unmarshal(&config); err != nil {
 			fmt.Printf("Unmarshal settings failed, err:%v\n", err)
 			return
 		}
 	})
-	return
+	return config, nil
 }

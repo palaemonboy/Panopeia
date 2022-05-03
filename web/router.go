@@ -3,9 +3,6 @@ package web
 import (
 	"context"
 	"fmt"
-	"github.com/palaemonboy/Panopeia/internal/pkg/errs"
-	"github.com/palaemonboy/Panopeia/internal/pkg/middleware/logger"
-	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
@@ -13,10 +10,14 @@ import (
 	"time"
 
 	"github.com/palaemonboy/Panopeia/internal/pkg/config"
+	"github.com/palaemonboy/Panopeia/internal/pkg/errs"
+	"github.com/palaemonboy/Panopeia/internal/pkg/middleware"
+	"github.com/palaemonboy/Panopeia/internal/pkg/middleware/db"
+	"github.com/palaemonboy/Panopeia/internal/pkg/middleware/logger"
+	"github.com/palaemonboy/Panopeia/web/handlers"
 
 	"github.com/gin-gonic/gin"
-	"github.com/palaemonboy/Panopeia/internal/pkg/middleware"
-	"github.com/palaemonboy/Panopeia/web/handlers"
+	"go.uber.org/zap"
 )
 
 // Router 路由结构体
@@ -28,28 +29,26 @@ type Router struct {
 func NewRouter() *Router {
 
 	// 1、加载配置
-	if err := config.Init(); err != nil {
+	config, err := config.Init()
+	if err != nil {
 		fmt.Printf("init settings failed, err:%v\n", err)
 		panic(err)
 	}
 
 	// 2、初始化日志
-	if err := logger.Init(config.Conf.Log, config.Conf.Mode); err != nil {
+	if err := logger.Init(config.Log, config.Mode); err != nil {
 		fmt.Printf("init log settings failed, err:%v\n", err)
 		panic(err)
 	}
 	// 日志追加
 	defer zap.L().Sync()
-
-	//// 3、初始化DB连接
-	//if err := db.Initializes(config.Conf.DB); err != nil {
-	//	fmt.Printf("init settings failed, err:%v\n", err)
-	//	panic(err)
-	//}
-	//defer db.Close()
+	// 3、初始化DB连接
+	if err := db.Initializes(config.DB); err != nil {
+		fmt.Printf("init settings failed, err:%v\n", err)
+		panic(err)
+	}
 	// 获取DB连接，测试数据库使用
-	//_, err = db.GetTestDB()
-
+	_, _ = db.GetTestDB()
 	router := gin.Default()
 	version := "0.0.1"
 	router.Use(

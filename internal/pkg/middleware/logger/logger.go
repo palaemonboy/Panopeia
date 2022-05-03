@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"github.com/palaemonboy/Panopeia/internal/pkg/config"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/natefinch/lumberjack"
+	"github.com/palaemonboy/Panopeia/internal/pkg/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

@@ -1,8 +1,9 @@
 package db
 
 import (
-	"github.com/palaemonboy/Panopeia/internal/pkg/config"
 	"time"
+
+	"github.com/palaemonboy/Panopeia/internal/pkg/config"
 
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
@@ -21,7 +22,7 @@ type GormManager struct {
 var dbManager GormManager
 
 // Initializes DB初始化
-func Initializes(dbConfigs *config.DBConfig) error {
+func Initializes(dbConfigs []config.DBConfig) error {
 	dbManager.ConnPool = make(map[string]*gorm.DB)
 	for _, dbConfig := range dbConfigs {
 		conn, err := openGorm(dbConfig)
