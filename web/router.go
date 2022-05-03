@@ -2,13 +2,15 @@ package web
 
 import (
 	"context"
+	"fmt"
+	"github.com/palaemonboy/Panopeia/internal/pkg/errs"
+	"github.com/palaemonboy/Panopeia/internal/pkg/middleware/logger"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-
-	"github.com/palaemonboy/Panopeia/internal/pkg/middleware/db"
 
 	"github.com/palaemonboy/Panopeia/internal/pkg/config"
 
@@ -24,25 +26,43 @@ type Router struct {
 
 // NewRouter 代码入口
 func NewRouter() *Router {
-	//  配置初始化
-	conf, err := config.Initialize()
-	if err != nil {
-		// 前置配置加载失败，直接panic
+
+	// 1、加载配置
+	if err := config.Init(); err != nil {
+		fmt.Printf("init settings failed, err:%v\n", err)
 		panic(err)
 	}
-	// DB初始化
-	if err := db.Initializes(conf.DB); err != nil {
-		// 前置DB初始化失败，直接panic
+
+	// 2、初始化日志
+	if err := logger.Init(config.Conf.Log, config.Conf.Mode); err != nil {
+		fmt.Printf("init log settings failed, err:%v\n", err)
 		panic(err)
 	}
+	// 日志追加
+	defer zap.L().Sync()
+
+	//// 3、初始化DB连接
+	//if err := db.Initializes(config.Conf.DB); err != nil {
+	//	fmt.Printf("init settings failed, err:%v\n", err)
+	//	panic(err)
+	//}
+	//defer db.Close()
 	// 获取DB连接，测试数据库使用
-	_, err = db.GetTestDB()
+	//_, err = db.GetTestDB()
+
 	router := gin.Default()
 	version := "0.0.1"
 	router.Use(
-		middleware.Jsonifier(version),
-		middleware.CORS(),
+		middleware.Jsonifier(version), // 格式化输出中间件
+		middleware.CORS(),             //跨域中间件
+		logger.GinLogger(),            //日志中间件
+		logger.GinRecovery(true),      //Recovery 中间件
 	)
+	router.NoRoute(func(c *gin.Context) {
+		middleware.SetErrWithTraceBack(c,
+			errs.New(http.StatusNotFound, "Default 404."),
+		)
+	})
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome Panopeia Server.")
 	})
@@ -57,7 +77,7 @@ func NewRouter() *Router {
 		// Login 入口
 		LoginAPI := ServiceAPI.Group("/login")
 		{
-			LoginAPI.GET("/getusers", handlers.GetUsers)
+			LoginAPI.POST("/getusers", handlers.GetUsers)
 		}
 
 	}
@@ -71,7 +91,7 @@ func NewRouter() *Router {
 func (r *Router) Run() {
 
 	srv := &http.Server{
-		Addr:    ":9090",
+		Addr:    ":9999",
 		Handler: r.Engine,
 	}
 
